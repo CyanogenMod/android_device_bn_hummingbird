@@ -15,7 +15,7 @@
 
 #
 # This file is the build configuration for a full Android
-# build for ovation hardware. This cleanly combines a set of
+# build for hummingbird hardware. This cleanly combines a set of
 # device-specific aspects (drivers) with a device-agnostic
 # product configuration (apps).
 #
@@ -24,11 +24,11 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
 # This is where we'd set a backup provider if we had one
 #$(call inherit-product, device/sample/products/backup_overlay.mk)
-$(call inherit-product, device/bn/ovation/device.mk)
+$(call inherit-product, device/bn/hummingbird/device.mk)
 
 # Discard inherited values and use our own instead.
-PRODUCT_NAME := full_ovation
-PRODUCT_DEVICE := ovation
+PRODUCT_NAME := full_hummingbird
+PRODUCT_DEVICE := hummingbird
 PRODUCT_BRAND := bn
-PRODUCT_MODEL := NookHD+
+PRODUCT_MODEL := NookHD
 PRODUCT_MANUFACTURER := bn

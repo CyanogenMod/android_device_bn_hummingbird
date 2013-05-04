@@ -20,7 +20,7 @@
 #
 # Everything in this directory will become public
 
-DEVICE_FOLDER := device/bn/ovation
+DEVICE_FOLDER := device/bn/hummingbird
 
 ifeq ($(TARGET_PREBUILT_KERNEL),)
 LOCAL_KERNEL := $(DEVICE_FOLDER)/kernel
@@ -36,9 +36,9 @@ endif
 
 PRODUCT_COPY_FILES += \
 	$(LOCAL_KERNEL):kernel \
-	$(DEVICE_FOLDER)/root/init.ovation.rc:root/init.ovation.rc \
-	$(DEVICE_FOLDER)/root/init.ovation.usb.rc:root/init.ovation.usb.rc \
-	$(DEVICE_FOLDER)/root/ueventd.ovation.rc:root/ueventd.ovation.rc \
+	$(DEVICE_FOLDER)/root/init.hummingbird.rc:root/init.hummingbird.rc \
+	$(DEVICE_FOLDER)/root/init.hummingbird.usb.rc:root/init.hummingbird.usb.rc \
+	$(DEVICE_FOLDER)/root/ueventd.hummingbird.rc:root/ueventd.hummingbird.rc \
 
 # Audio
 PRODUCT_COPY_FILES += \
@@ -91,7 +91,7 @@ PRODUCT_COPY_FILES += \
 
 # Vold
 PRODUCT_COPY_FILES += \
-	$(DEVICE_FOLDER)/prebuilt/etc/vold.ovation.fstab:system/etc/vold.fstab
+	$(DEVICE_FOLDER)/prebuilt/etc/vold.hummingbird.fstab:system/etc/vold.fstab
 
 # Media Profile
 PRODUCT_COPY_FILES += \
@@ -112,13 +112,14 @@ PRODUCT_PACKAGES += \
 	uim-sysfs \
 	libbt-vendor \
 	sdcard \
-	lights.ovation \
+	lights.hummingbird \
 	audio.a2dp.default
 
 # Place permission files
 PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml \
 	frameworks/native/data/etc/android.hardware.camera.autofocus.xml:system/etc/permissions/android.hardware.camera.autofocus.xml \
+	frameworks/native/data/etc/android.hardware.bluetooth.xml:system/etc/permissions/android.hardware.bluetooth.xml \
 	frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
 	frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:system/etc/permissions/android.hardware.sensor.accelerometer.xml \
 	frameworks/native/data/etc/android.hardware.sensor.light.xml:system/etc/permissions/android.hardware.sensor.light.xml \
@@ -129,13 +130,13 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
 	frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml \
 	frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml \
-	packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:system/etc/permissions/android.software.live_wallpaper.xml
+	$(call add-to-product-copy-files-if-exists,packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:system/etc/permissions/android.software.live_wallpaper.xml)
 
 # Device specific packages
 PRODUCT_PACKAGES += \
-	liblights.ovation \
-	power.ovation \
-	sensors.ovation
+	liblights.hummingbird \
+	power.hummingbird \
+	sensors.hummingbird
 
 # Filesystem management tools
 PRODUCT_PACKAGES += \
@@ -155,7 +156,7 @@ PRODUCT_PACKAGES += \
 	calibrator
 
 PRODUCT_CHARACTERISTICS := tablet
-PRODUCT_AAPT_CONFIG := xlarge hdpi xhdpi
+PRODUCT_AAPT_CONFIG := large hdpi xhdpi
 PRODUCT_AAPT_PREF_CONFIG := hdpi
 # we have enough storage space to hold precise GC data
 PRODUCT_TAGS += dalvik.gc.type-precise
@@ -181,7 +182,7 @@ PRODUCT_PACKAGES += \
 	smc_pa_ctrl \
 	tf_daemon \
 	libtf_crypto_sst \
-	hwcomposer.ovation \
+	hwcomposer.hummingbird \
 	libOMX.TI.DUCATI1.VIDEO.H264SVCE \
 #	libOMX.TI.DUCATI1.VIDEO.CAMERA \
 
@@ -197,8 +198,11 @@ PRODUCT_PACKAGES += \
 	tinycap \
 	sh \
 	libwvm \
-	audio.primary.ovation \
+	audio.primary.hummingbird \
 	audio_policy.default 
+
+# USB Host app switcher
+#PRODUCT_PACKAGES += USBHostSwitcher
 
 PRODUCT_PROPERTY_OVERRIDES := \
 	ro.opengles.version=131072 \
@@ -213,7 +217,7 @@ PRODUCT_PROPERTY_OVERRIDES := \
 # Dalvik
 PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.heapstartsize=8m \
-    dalvik.vm.heapgrowthlimit=64m \
+    dalvik.vm.heapgrowthlimit=96m \
     dalvik.vm.heapsize=256m \
     dalvik.vm.heaptargetutilization=0.75 \
     dalvik.vm.heapminfree=512k \
@@ -245,6 +249,6 @@ PRODUCT_TAGS += dalvik.gc.type-precise
 
 $(call inherit-product, frameworks/native/build/tablet-dalvik-heap.mk)
 
-$(call inherit-product-if-exists, vendor/bn/ovation/device-vendor.mk)
-$(call inherit-product-if-exists, vendor/bn/ovation/device-vendor-blobs.mk)
+$(call inherit-product-if-exists, vendor/bn/hummingbird/device-vendor.mk)
+$(call inherit-product-if-exists, vendor/bn/hummingbird/device-vendor-blobs.mk)
 

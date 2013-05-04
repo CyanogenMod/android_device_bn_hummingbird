@@ -27,7 +27,7 @@ BOARD_WPAN_DEVICE := true
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(DEVICE_FOLDER)/bluetooth
 
 # inherit from the proprietary version
--include vendor/bn/ovation/BoardConfigVendor.mk
+-include vendor/bn/hummingbird/BoardConfigVendor.mk
 
 # Processor 
 TARGET_BOARD_PLATFORM := omap4
@@ -40,13 +40,13 @@ TARGET_BOARD_OMAP_CPU := 4470
 ARCH_ARM_HAVE_TLS_REGISTER := true
 TARGET_GLOBAL_CFLAGS += -mtune=cortex-a9 -mfpu=neon -mfloat-abi=softfp
 TARGET_GLOBAL_CPPFLAGS += -mtune=cortex-a9 -mfpu=neon -mfloat-abi=softfp
-TARGET_BOOTLOADER_BOARD_NAME := ovation
+TARGET_BOOTLOADER_BOARD_NAME := hummingbird
 
 # Kernel/Boot
-BOARD_KERNEL_BASE := 0x80008000
+BOARD_KERNEL_BASE := 0x80000000
 BOARD_KERNEL_PAGESIZE := 4096
-BOARD_KERNEL_CMDLINE := androidboot.console=ttyO0 console=ttyO0,115200n8 def_disp=lcd2
-BOARD_USES_UBOOT := true
+BOARD_KERNEL_CMDLINE := vmalloc=768M init=/init rootwait omap_wdt.timer_margin=20 androidboot.hardware=hummingbird
+#BOARD_USES_UBOOT := true
 
 # Filesystem
 TARGET_USERIMAGES_USE_EXT4 := true
@@ -78,7 +78,7 @@ TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/devices/virtual/android_usb/android0/f_
 
 # Graphics
 USE_OPENGL_RENDERER := true
-BOARD_EGL_CFG := device/bn/ovation/prebuilt/etc/egl.cfg
+BOARD_EGL_CFG := device/bn/hummingbird/prebuilt/etc/egl.cfg
 
 # OMAP
 OMAP_ENHANCEMENT := true
@@ -88,8 +88,8 @@ TI_CUSTOM_DOMX_PATH := $(DEVICE_FOLDER)/domx
 DOMX_PATH := $(DEVICE_FOLDER)/domx
 
 # Recovery
-BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/bn/ovation/recovery/recovery_ui.c
-TARGET_RECOVERY_INITRC := device/bn/ovation/recovery/init.rc
+BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/bn/hummingbird/recovery/recovery_ui.c
+TARGET_RECOVERY_INITRC := device/bn/hummingbird/recovery/init.rc
 TARGET_RECOVERY_PRE_COMMAND := "echo 'recovery' > /bootdata/BCB; sync"
 BOARD_HAS_LARGE_FILESYSTEM := true
 
@@ -98,17 +98,11 @@ ADDITIONAL_DEFAULT_PROPERTIES += ro.secure=0
 ADDITIONAL_DEFAULT_PROPERTIES += ro.allow.mock.location=1
 
 # boot.img creation
-BOARD_CUSTOM_BOOTIMG_MK := device/bn/ovation/boot.mk
+BOARD_CUSTOM_BOOTIMG_MK := device/bn/hummingbird/boot.mk
 TARGET_NO_BOOTLOADER := true
-TARGET_PROVIDES_RELEASETOOLS := true
 
-# hack the ota
-TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT := ./device/bn/ovation/releasetools/ovation_ota_from_target_files
-# not tested at all
-TARGET_RELEASETOOL_IMG_FROM_TARGET_SCRIPT := ./device/bn/ovation/releasetools/ovation_img_from_target_files
-
-TARGET_KERNEL_CONFIG := cyanogenmod_ovation_green_sdcard_defconfig
-TARGET_KERNEL_SOURCE := kernel/bn/ovation
+TARGET_KERNEL_CONFIG := cyanogenmod_hummingbird_green_defconfig
+TARGET_KERNEL_SOURCE := kernel/bn/hummingbird
 TARGET_KERNEL_CUSTOM_TOOLCHAIN := arm-eabi-4.4.3
 
 SGX_MODULES:
@@ -128,13 +122,13 @@ WIFI_MODULES:
 	mv hardware/ti/wlan/mac80211/compat_wl12xx/drivers/net/wireless/wl12xx/wl12xx_sdio.ko $(KERNEL_MODULES_OUT)
 
 BT_MODULES:
-	make -C kernel/bn/ovation/external/wpan/bluetooth-compat KERNEL_DIR=$(KERNEL_OUT) KLIB=$(KERNEL_OUT) KLIB_BUILD=$(KERNEL_OUT) ARCH=arm CROSS_COMPILE=arm-eabi-
-	mv kernel/bn/ovation/external/wpan/bluetooth-compat/drivers/bluetooth/hci_uart.ko $(KERNEL_MODULES_OUT)
-	mv kernel/bn/ovation/external/wpan/bluetooth-compat/drivers/bluetooth/btwilink.ko $(KERNEL_MODULES_OUT)
-	mv kernel/bn/ovation/external/wpan/bluetooth-compat/net/bluetooth/bluetooth.ko $(KERNEL_MODULES_OUT)
-	mv kernel/bn/ovation/external/wpan/bluetooth-compat/net/bluetooth/hidp/hidp.ko $(KERNEL_MODULES_OUT)
-	mv kernel/bn/ovation/external/wpan/bluetooth-compat/net/bluetooth/bnep/bnep.ko $(KERNEL_MODULES_OUT)
-	mv kernel/bn/ovation/external/wpan/bluetooth-compat/net/bluetooth/rfcomm/rfcomm.ko $(KERNEL_MODULES_OUT)
+	make -C kernel/bn/hummingbird/external/wpan/bluetooth-compat KERNEL_DIR=$(KERNEL_OUT) KLIB=$(KERNEL_OUT) KLIB_BUILD=$(KERNEL_OUT) ARCH=arm CROSS_COMPILE=arm-eabi-
+	mv kernel/bn/hummingbird/external/wpan/bluetooth-compat/drivers/bluetooth/hci_uart.ko $(KERNEL_MODULES_OUT)
+	mv kernel/bn/hummingbird/external/wpan/bluetooth-compat/drivers/bluetooth/btwilink.ko $(KERNEL_MODULES_OUT)
+	mv kernel/bn/hummingbird/external/wpan/bluetooth-compat/net/bluetooth/bluetooth.ko $(KERNEL_MODULES_OUT)
+	mv kernel/bn/hummingbird/external/wpan/bluetooth-compat/net/bluetooth/hidp/hidp.ko $(KERNEL_MODULES_OUT)
+	mv kernel/bn/hummingbird/external/wpan/bluetooth-compat/net/bluetooth/bnep/bnep.ko $(KERNEL_MODULES_OUT)
+	mv kernel/bn/hummingbird/external/wpan/bluetooth-compat/net/bluetooth/rfcomm/rfcomm.ko $(KERNEL_MODULES_OUT)
 
 TARGET_KERNEL_MODULES := SGX_MODULES WIFI_MODULES BT_MODULES
 
@@ -184,7 +178,7 @@ endif
 BOARD_USES_SECURE_SERVICES := true
 
 #Config for building TWRP
-DEVICE_RESOLUTION := 1920x1280
+DEVICE_RESOLUTION := 1440x900
 RECOVERY_TOUCHSCREEN_SWAP_XY := true
 RECOVERY_TOUCHSCREEN_FLIP_Y := true
 TW_NO_REBOOT_BOOTLOADER := true
@@ -198,6 +192,9 @@ TW_DEFAULT_EXTERNAL_STORAGE := true
 # For bigger CWM font
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_15x24.h\"
 RECOVERY_NAME := EMMC CWM-based recovery
+
+# NookHD has inverted screen
+BOARD_HAS_FLIPPED_SCREEN := true
 
 # Bootanimation
 TARGET_BOOTANIMATION_PRELOAD := true

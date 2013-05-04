@@ -1,4 +1,4 @@
-import init.ovation.usb.rc
+import init.hummingbird.usb.rc
 
 on init
     mount debugfs /sys/kernel/debug /sys/kernel/debug
@@ -6,6 +6,7 @@ on init
     mkdir /storage 0050 system sdcard_r
     mkdir /storage/emulated 0555 root root
     mkdir /storage/sdcard1 0000 system system
+    mkdir /storage/usb0 0000 system system
 
     # for backwards compatibility
     symlink /storage/emulated/legacy /emmc
@@ -22,7 +23,7 @@ on init
     export EMULATED_STORAGE_TARGET /storage/emulated
     export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
 
-    # for ovation
+    # for hummingbird
     mkdir /rom 0777 root root	
     mkdir /bootdata 0777 root root
 	
@@ -58,15 +59,13 @@ on post-fs
 
 on fs
     # mount partitions
-    mount ext4 /dev/block/mmcblk1p2 /system wait ro errors=panic
+    mount ext4 /dev/block/platform/omap/omap_hsmmc.1/by-name/system /system wait ro errors=panic
     mount ext4 /dev/block/platform/omap/omap_hsmmc.1/by-name/cache /cache wait noatime nosuid nodev errors=panic
-    mount ext4 /dev/block/mmcblk1p3 /data wait noatime nosuid nodev errors=panic
+    mount ext4 /dev/block/platform/omap/omap_hsmmc.1/by-name/userdata /data wait noatime nosuid nodev errors=panic
     mount vfat /dev/block/platform/omap/omap_hsmmc.1/by-name/rom /rom sync noatime nodiratime uid=1000,gid=1000,fmask=117,dmask=007
     mount vfat /dev/block/platform/omap/omap_hsmmc.1/by-name/bootdata /bootdata wait noatime nodiratime uid=1000,gid=1000,fmask=117,dmask=007
 
     # Need to mount internal data partition to get access to emulated sdcard.
-    mkdir /int-data
-    mount ext4 /dev/block/platform/omap/omap_hsmmc.1/by-name/userdata /int-data wait noatime nosuid nodev
 
     # change permissions for Bluetooth/FM/GPS
     chmod 0600 /sys/class/rfkill/rfkill0/state
@@ -77,9 +76,6 @@ on fs
 on post-fs-data
     mkdir /data/media 0775 media_rw media_rw
     chown media_rw media_rw /data/media
-    # we will remap this as /mnt/sdcard with the sdcard fuse tool
-    mkdir /int-data/media 0775 media_rw media_rw
-    chown media_rw media_rw /int-data/media
 
     mkdir /cache/trace 0777 system system
     chown system system /cache/trace
@@ -233,6 +229,13 @@ on boot
    # OVATION use the path below for lcd brightness control
     chown system system /sys/class/backlight/lcd-backlight/brightness
 
+    # Accelerometer permissions
+    chown system system /sys/bus/i2c/drivers/kxtf9/1-000e/delay
+    chown system system /sys/bus/i2c/drivers/kxtf9/1-000e/enable
+
+    # USB ID properties - writable by all for now
+    chmod 0666 /sys/devices/platform/omap/omap_i2c.1/i2c-1/1-0048/twl6030_usb/usb_id
+
 on property:dev.bootcomplete=1
     start bootcnt
     start install_keybox
@@ -284,7 +287,7 @@ service bootcnt /system/bin/clear_bootcnt.sh
     disabled
     oneshot
 
-service sdcard /system/bin/sdcard /int-data/media /mnt/shell/emulated 1023 1023
+service sdcard /system/bin/sdcard /data/media /mnt/shell/emulated 1023 1023
     class main
     disabled
 

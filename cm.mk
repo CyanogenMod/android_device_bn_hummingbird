@@ -14,25 +14,24 @@
 # limitations under the License.
 #
 
-TARGET_SCREEN_WIDTH := 1920
-TARGET_SCREEN_HEIGHT := 1280
+TARGET_SCREEN_WIDTH := 1440
+TARGET_SCREEN_HEIGHT := 900
 
 # Inherit some common CM stuff.
 $(call inherit-product, vendor/cm/config/common_full_tablet_wifionly.mk)
 
-# Inherit device configuration for ovation
-$(call inherit-product, device/bn/ovation/full_ovation.mk)
+# Inherit device configuration for hummingbird
+$(call inherit-product, device/bn/hummingbird/full_hummingbird.mk)
 
-DEVICE_PACKAGE_OVERLAYS += device/bn/ovation/overlay/cm
+DEVICE_PACKAGE_OVERLAYS += device/bn/hummingbird/overlay/cm
 
 BOARD_USE_CUSTOM_LIBION := true
 
-PRODUCT_NAME := cm_ovation
-PRODUCT_DEVICE := ovation
+PRODUCT_NAME := cm_hummingbird
+PRODUCT_DEVICE := hummingbird
 PRODUCT_BRAND := Android
-PRODUCT_MODEL := Barnes & Noble Nook HD+
+PRODUCT_MODEL := Barnes & Noble Nook HD
 PRODUCT_MANUFACTURER := Barnes & Noble
-PRODUCT_RELEASE_NAME := NookHD+
-
+PRODUCT_RELEASE_NAME := NookHD
 
 

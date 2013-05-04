@@ -15,7 +15,7 @@
 
 LOCAL_PATH := $(call my-dir)
 
-ifneq ($(filter ovation,$(TARGET_DEVICE)),)
+ifneq ($(filter hummingbird,$(TARGET_DEVICE)),)
 
 ifneq ($(TARGET_SIMULATOR),true)
 include $(call first-makefiles-under,$(LOCAL_PATH))
