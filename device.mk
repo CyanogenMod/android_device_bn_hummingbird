@@ -184,6 +184,7 @@ PRODUCT_PACKAGES += \
 	libtf_crypto_sst \
 	hwcomposer.hummingbird \
 	libOMX.TI.DUCATI1.VIDEO.H264SVCE \
+	audio.hdmi.hummingbird \
 #	libOMX.TI.DUCATI1.VIDEO.CAMERA \
 
 PRODUCT_PACKAGES += \
