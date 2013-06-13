@@ -30,7 +30,7 @@ BOARD_USE_CUSTOM_LIBION := true
 PRODUCT_NAME := cm_hummingbird
 PRODUCT_DEVICE := hummingbird
 PRODUCT_BRAND := Android
-PRODUCT_MODEL := Barnes & Noble Nook HD
+PRODUCT_MODEL := BN Nook HD
 PRODUCT_MANUFACTURER := Barnes & Noble
 PRODUCT_RELEASE_NAME := NookHD
 
