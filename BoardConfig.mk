@@ -127,7 +127,6 @@ BT_MODULES:
 	mv kernel/bn/hummingbird/external/wpan/bluetooth-compat/drivers/bluetooth/btwilink.ko $(KERNEL_MODULES_OUT)
 	mv kernel/bn/hummingbird/external/wpan/bluetooth-compat/net/bluetooth/bluetooth.ko $(KERNEL_MODULES_OUT)
 	mv kernel/bn/hummingbird/external/wpan/bluetooth-compat/net/bluetooth/hidp/hidp.ko $(KERNEL_MODULES_OUT)
-	mv kernel/bn/hummingbird/external/wpan/bluetooth-compat/net/bluetooth/bnep/bnep.ko $(KERNEL_MODULES_OUT)
 	mv kernel/bn/hummingbird/external/wpan/bluetooth-compat/net/bluetooth/rfcomm/rfcomm.ko $(KERNEL_MODULES_OUT)
 
 TARGET_KERNEL_MODULES := SGX_MODULES WIFI_MODULES BT_MODULES
