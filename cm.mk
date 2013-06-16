@@ -23,7 +23,7 @@ $(call inherit-product, vendor/cm/config/common_full_tablet_wifionly.mk)
 # Inherit device configuration for hummingbird
 $(call inherit-product, device/bn/hummingbird/full_hummingbird.mk)
 
-DEVICE_PACKAGE_OVERLAYS += device/bn/hummingbird/overlay/cm
+DEVICE_PACKAGE_OVERLAYS += device/bn/hummingbird/overlay/aosp
 
 BOARD_USE_CUSTOM_LIBION := true
 
