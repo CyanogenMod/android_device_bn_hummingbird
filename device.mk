@@ -46,5 +46,5 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_AAPT_CONFIG := large hdpi xhdpi
 
+$(call inherit-product-if-exists, frameworks/native/build/tablet-7in-hdpi-1024-dalvik-heap.mk)
 $(call inherit-product-if-exists, vendor/bn/hd-common/hd-common-vendor.mk)
-
