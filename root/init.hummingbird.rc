@@ -1,27 +1,27 @@
 import init.hummingbird.usb.rc
 
 on init
-    mount debugfs /sys/kernel/debug /sys/kernel/debug
+     # See storage config details at http://source.android.com/tech/storage/
     mkdir /mnt/shell/emulated 0700 shell shell
-    mkdir /storage 0050 system sdcard_r
     mkdir /storage/emulated 0555 root root
-    mkdir /storage/sdcard1 0000 system system
-    mkdir /storage/usb0 0000 system system
-
-    # for backwards compatibility
-    symlink /storage/emulated/legacy /storage/sdcard0
-    symlink /storage/sdcard0 /sdcard
-    symlink /storage/sdcard0 /mnt/sdcard
-    symlink /storage/sdcard1 /mnt/ext_sdcard
-    symlink /storage/sdcard1 /ext_sdcard
-    symlink /mnt/shell/emulated/0 /storage/emulated/legacy
-
-    symlink /system/vendor /vendor
+    mkdir /storage/sdcard1 0555 root root
+    mkdir /storage/usb0 0555 root root
 
     export EXTERNAL_STORAGE /storage/emulated/legacy
     export SECONDARY_STORAGE /storage/sdcard1
-    export EMULATED_STORAGE_TARGET /storage/emulated
     export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
+    export EMULATED_STORAGE_TARGET /storage/emulated
+
+    # Support legacy paths
+    symlink /storage/emulated/legacy /sdcard
+    symlink /storage/emulated/legacy /mnt/sdcard
+    symlink /storage/emulated/legacy /storage/sdcard0
+    symlink /mnt/shell/emulated/0    /storage/emulated/legacy
+
+    symlink /storage/sdcard1 /mnt/ext_sdcard
+    symlink /storage/sdcard1 /ext_sdcard
+
+    symlink /system/vendor /vendor
 
     # for hummingbird
     mkdir /rom 0777 root root	
@@ -33,48 +33,62 @@ on init
 
     # setup global environment
     export PHONE_STORAGE /storage/sdcard0
-    export DSP_PATH /system/lib/dsp
-    export DEFAULT_BASEIMAGE /system/lib/dsp/baseimage.dof
+
+on fs
+    # mount partitions
+    mount_all /fstab.ovation
+
+    # pvr module
+    insmod /system/lib/modules/pvrsrvkm_sgx544_112.ko
+    start pvrsrvinit
+
+    # change permissions for ION driver
+    chmod 0777 /dev/ion
+
+    # sensor/i2c/backlight permissions
+    chown system system /sys/devices/virtual/input/input0/mode
+    chmod 0770 /sys/devices/virtual/input/input0/mode
+    chown system system /sys/devices/virtual/input/input0/delay
+    chmod 0770 /sys/devices/virtual/input/input0/delay
+    chown system system /sys/bus/i2c/drivers/ft5x06/3-0038/wmreg
+    chown system system /sys/bus/i2c/drivers/ft5x06/3-0038/wmval
+    chown system system /sys/bus/i2c/drivers/kxtf9/1-000e/delay
+    chown system system /sys/bus/i2c/drivers/kxtf9/1-000e/enable
+
+    # hummingbird use the path below for lcd brightness control
+    chown system system /sys/class/backlight/lcd-backlight/brightness
+
+    # USB ID properties - writable by all for now
+    chmod 0666 /sys/devices/platform/omap/omap_i2c.1/i2c-1/1-0048/twl6030_usb/usb_id
 
 on post-fs
     setprop ro.radio.noril yes
 
-# H264 Encoder Profile setting
-# 1 - Base Profile
-# 2 - Main Profile
-# 8 - High Profile
+    # H264 Encoder Profile setting
+    # 1 - Base Profile
+    # 2 - Main Profile
+    # 8 - High Profile
     setprop video.h264enc.profile 1
 
-# change /dev/hdcp owner and permission for FQC test
+    # change /dev/hdcp owner and permission for FQC test
     chown system system /dev/hdcp
     chmod 0666 /dev/hdcp
 
-    # Load SGX Modules
-    insmod /system/lib/modules/pvrsrvkm_sgx544_112.ko
-
-    # Wait for SGX module init
-    wait /dev/pvrsrvkm
-
-    # Initialize the SGX driver
-    exec /vendor/bin/pvrsrvinit
-
-on fs
-    # mount partitions
-    mount ext4 /dev/block/platform/omap/omap_hsmmc.1/by-name/system /system wait ro errors=panic
-    mount ext4 /dev/block/platform/omap/omap_hsmmc.1/by-name/cache /cache wait noatime nosuid nodev errors=panic
-    mount ext4 /dev/block/platform/omap/omap_hsmmc.1/by-name/userdata /data wait noatime nosuid nodev errors=panic
-    mount vfat /dev/block/platform/omap/omap_hsmmc.1/by-name/rom /rom sync noatime nodiratime uid=1000,gid=1000,fmask=117,dmask=007
-    mount vfat /dev/block/platform/omap/omap_hsmmc.1/by-name/bootdata /bootdata wait noatime nodiratime uid=1000,gid=1000,fmask=117,dmask=007
-
-    # Need to mount internal data partition to get access to emulated sdcard.
+    # wi-fi
+    insmod /system/lib/modules/compat.ko
+    insmod /system/lib/modules/cfg80211.ko
+    insmod /system/lib/modules/mac80211.ko
+    insmod /system/lib/modules/wl12xx.ko
 
     # change permissions for Bluetooth/FM/GPS
     chmod 0600 /sys/class/rfkill/rfkill0/state
     chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
     chmod 0600 /dev/ttyO3
     chown bluetooth bluetooth /dev/ttyO3
+    chmod 0666 /dev/rfkill
 
 on post-fs-data
+    # we will remap this as /mnt/sdcard with the sdcard fuse tool
     mkdir /data/media 0775 media_rw media_rw
     chown media_rw media_rw /data/media
 
@@ -86,6 +100,15 @@ on post-fs-data
     chown drmrpc drmrpc /data/smc/storage.bin
     chown drmrpc drmrpc /data/smc/system.bin
 
+    # wireless
+    mkdir /data/misc/wifi 0770 wifi wifi
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    chown dhcp dhcp /data/misc/dhcp
+
+    # Fix wlan MAC addr
+    start fixmac
+
     setprop vold.post_fs_data_done 1
     start sdcard
 
@@ -93,6 +116,8 @@ on post-fs-data
     chmod 0666 /dev/uhid
 
 on boot
+    mount debugfs /sys/kernel/debug /sys/kernel/debug
+    chmod 0666 /dev/pvrsrvkm
 
     # fake some battery state
     setprop status.battery.state Slow
@@ -100,131 +125,23 @@ on boot
     setprop status.battery.level_raw  50
     setprop status.battery.level_scale 9
 
-    # wireless
-    mkdir /data/misc/wifi 0770 wifi wifi
-    mkdir /data/misc/wifi/sockets 0770 wifi wifi
-    mkdir /data/misc/dhcp 0770 dhcp dhcp
-    chown dhcp dhcp /data/misc/dhcp
-
-    # Boost the CPU for 30 secs during boot, bump to 1.3GHz
-    write /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq 1300000
-    write /sys/devices/system/cpu/cpufreq/interactive/min_sample_time 30000000
-    write /sys/devices/system/cpu/cpufreq/interactive/boostpulse 1
-
-    insmod /system/lib/modules/compat.ko
-    insmod /system/lib/modules/cfg80211.ko
-    insmod /system/lib/modules/mac80211.ko
-    insmod /system/lib/modules/wl12xx.ko
-
-    # Fix wlan MAC addr
-    exec /system/bin/fix-mac.sh
-
-    chown media media /dev/syslink-proc4430
-    chown media media /dev/syslink-procmgr
-    chown media media /dev/syslink_ipc
-    chown media media /dev/omap-rproc0
-    chown media media /dev/omap-rproc1
-    chown media media /dev/omap-rproc2
-    chown media media /dev/iovmm-omap0
-    chown media media /dev/iovmm-omap1
-    chown media media /dev/omap-devh0
-    chown media media /dev/omap-devh1
-    chown media media /dev/omap-devh2
-
-    chmod 660 /dev/syslink-proc4430
-    chmod 660 /dev/syslink-procmgr
-    chmod 660 /dev/syslink_ipc
-    chmod 440 /dev/omap-rproc0
-    chmod 440 /dev/omap-rproc1
-    chmod 440 /dev/omap-rproc2
-    chmod 440 /dev/iovmm-omap0
-    chmod 440 /dev/iovmm-omap1
-    chmod 440 /dev/omap-devh0
-    chmod 440 /dev/omap-devh1
-    chmod 440 /dev/omap-devh2
-    
-    chown system system /sys/devices/virtual/input/input0/mode
-    chmod 0770 /sys/devices/virtual/input/input0/mode
-    chown system system /sys/devices/virtual/input/input0/delay
-    chmod 0770 /sys/devices/virtual/input/input0/delay
-    
-    # change permissions for Overlay
-    chown system system /dev/video1
-    chown system system /dev/video2
-    chown system system /dev/video3
-    
-    # change permissions for overlay managers and display devices
-    chown system system /sys/devices/platform/omapdss/display0/enabled
-    chown system system /sys/devices/platform/omapdss/display1/enabled
-    chown system system /sys/devices/platform/omapdss/display2/enabled
-    chown system system /sys/devices/platform/omapdss/display3/enabled
-    chown system system /sys/devices/platform/omapdss/display0/name
-    chown system system /sys/devices/platform/omapdss/display1/name
-    chown system system /sys/devices/platform/omapdss/display2/name
-    chown system system /sys/devices/platform/omapdss/display3/name
-    chown system system /sys/devices/platform/omapdss/overlay0/manager
-    chown system system /sys/devices/platform/omapdss/overlay1/manager
-    chown system system /sys/devices/platform/omapdss/overlay2/manager
-    chown system system /sys/devices/platform/omapdss/overlay3/manager
-    chown system system /sys/devices/platform/omapdss/overlay0/zorder
-    chown system system /sys/devices/platform/omapdss/overlay1/zorder
-    chown system system /sys/devices/platform/omapdss/overlay2/zorder
-    chown system system /sys/devices/platform/omapdss/overlay3/zorder
-    
-    # change permissions for manager tranparency parameters
-    chown system system /sys/devices/platform/omapdss/manager0/name
-    chown system system /sys/devices/platform/omapdss/manager0/display
-    chown system system /sys/devices/platform/omapdss/manager1/name
-    chown system system /sys/devices/platform/omapdss/manager1/display
-    chown system system /sys/devices/platform/omapdss/manager2/name
-    chown system system /sys/devices/platform/omapdss/manager2/display
-    chown system system /sys/devices/platform/omapdss/overlay0/enabled
-    chown system system /sys/devices/platform/omapdss/overlay1/enabled
-    chown system system /sys/devices/platform/omapdss/overlay2/enabled
-    chown system system /sys/devices/platform/omapdss/overlay3/enabled
-    
-    # change permissions for display timings to get the resolutions
-    chown system system /sys/devices/platform/omapdss/display0/timings
-    chown system system /sys/devices/platform/omapdss/display1/timings
-    chown system system /sys/devices/platform/omapdss/display2/timings
-    chown system system /sys/devices/platform/omapdss/display3/timings
-    chown system system /sys/devices/platform/omapdss/display2/code
-
-    # change permissions for i2c-2 device
-    chmod 0660 /dev/i2c-2
-    chown media media /dev/i2c-2
-
-    # change permissions for alsa nodes
-    chmod 0777 /dev/snd/controlC0
-    chmod 0777 /dev/snd/pcmC0D0p
-    chmod 0777 /dev/snd/pcmC0D1c
-    chmod 0777 /dev/snd/pcmC0D1p
-    chmod 0777 /dev/snd/pcmC0D2c
-    chmod 0777 /dev/snd/pcmC0D3c
-    chmod 0777 /dev/snd/pcmC0D3p
-    chmod 0777 /dev/snd/pcmC0D4c
-    chmod 0777 /dev/snd/pcmC0D4p
-    chmod 0777 /dev/snd/pcmC0D5c
-    chmod 0777 /dev/snd/pcmC0D5p
-    chmod 0777 /dev/snd/timer
-
-    # hummingbird use the path below for lcd brightness control
-    chown system system /sys/class/backlight/lcd-backlight/brightness
-
-    # touchscreen registers access
-    chown system system /sys/bus/i2c/drivers/ft5x06/3-0038/wmreg
-    chown system system /sys/bus/i2c/drivers/ft5x06/3-0038/wmval
-
-    # Accelerometer permissions
-    chown system system /sys/bus/i2c/drivers/kxtf9/1-000e/delay
-    chown system system /sys/bus/i2c/drivers/kxtf9/1-000e/enable
-
-    # USB ID properties - writable by all for now
-    chmod 0666 /sys/devices/platform/omap/omap_i2c.1/i2c-1/1-0048/twl6030_usb/usb_id
-
 on property:dev.bootcomplete=1
     start bootcnt
     start install_keybox
+
+service fixmac /system/bin/fix-mac.sh
+    class core
+    user root
+    group root
+    oneshot
+    disabled
+
+service pvrsrvinit /vendor/bin/pvrsrvinit
+    class core
+    user root
+    group root
+    oneshot
+    disabled
 
 #shared transport user space mgr service for Bluetooth, FM and GPS
 service uim /system/bin/uim-sysfs
@@ -272,13 +189,14 @@ service sdcard /system/bin/sdcard /data/media /mnt/shell/emulated 1023 1023
 
 service p2p_supplicant /system/bin/wpa_supplicant \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf -N \
-    -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf -puse_p2p_group_interface= \
+    -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf -puse_p2p_group_interface=1
     class main
     socket wpa_wlan0 dgram 660 wifi wifi
     disabled
     oneshot
 
-service wpa_supplicant /system/bin/wpa_supplicant -Dnl80211 -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf
+service wpa_supplicant /system/bin/wpa_supplicant \
+        -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf
     class main
     socket wpa_wlan0 dgram 660 wifi wifi
     disabled
@@ -307,10 +225,5 @@ service iprenew_p2p /system/bin/dhcpcd -n
 on property:wlan.driver.status=ok
     chown wifi wifi /sys/devices/platform/wl1271/bt_coex_state
 
-# Restart adbd so it can run as root
-on property:service.adb.root=1
-    write /sys/class/android_usb/android0/enable 0
-    restart adbd
-    write /sys/class/android_usb/android0/enable 1
-    
+
 on property:sys.boot_completed=1
