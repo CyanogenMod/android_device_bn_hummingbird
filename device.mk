@@ -29,13 +29,11 @@ $(call inherit-product, device/bn/bn-common/common.mk)
 DEVICE_PACKAGE_OVERLAYS += $(DEVICE_FOLDER)/overlay/aosp
 
 PRODUCT_COPY_FILES += \
+	$(DEVICE_FOLDER)/root/fstab.hummingbird:root/fstab.hummingbird \
 	$(DEVICE_FOLDER)/root/init.hummingbird.rc:root/init.hummingbird.rc \
 	$(DEVICE_FOLDER)/root/init.hummingbird.usb.rc:root/init.hummingbird.usb.rc \
 	$(DEVICE_FOLDER)/root/ueventd.hummingbird.rc:root/ueventd.hummingbird.rc \
 
-# Vold
-PRODUCT_COPY_FILES += \
-	$(DEVICE_FOLDER)/prebuilt/etc/vold.hummingbird.fstab:system/etc/vold.fstab
 
 # postrecoveryboot for recovery
 PRODUCT_COPY_FILES += \
