@@ -36,7 +36,7 @@ on init
 
 on fs
     # mount partitions
-    mount_all /fstab.ovation
+    mount_all /fstab.hummingbird
 
     # pvr module
     insmod /system/lib/modules/pvrsrvkm_sgx544_112.ko
