@@ -32,12 +32,14 @@ PRODUCT_COPY_FILES += \
 	$(DEVICE_FOLDER)/root/fstab.hummingbird:root/fstab.hummingbird \
 	$(DEVICE_FOLDER)/root/init.hummingbird.rc:root/init.hummingbird.rc \
 	$(DEVICE_FOLDER)/root/init.hummingbird.usb.rc:root/init.hummingbird.usb.rc \
+	$(DEVICE_FOLDER)/recovery/init.recovery.hummingbird.rc:/root/init.recovery.hummingbird.rc \
 	$(DEVICE_FOLDER)/root/ueventd.hummingbird.rc:root/ueventd.hummingbird.rc \
 
-
-# postrecoveryboot for recovery
-PRODUCT_COPY_FILES += \
-    $(DEVICE_FOLDER)/recovery/postrecoveryboot.sh:recovery/root/sbin/postrecoveryboot.sh
+# Device settings
+PRODUCT_PROPERTY_OVERRIDES += \
+    usb.vendor=2080 \
+    usb.product.adb=0006 \
+    usb.product.mtpadb=0006 \
 
 PRODUCT_AAPT_CONFIG := large hdpi xhdpi
 
